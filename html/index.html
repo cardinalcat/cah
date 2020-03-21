@@ -7,6 +7,21 @@
       function newgame(){
 
       }
+      function joingame(){
+        // Create WebSocket connection.
+const socket = new WebSocket('ws://localhost:3012');
+
+// Connection opened
+socket.addEventListener('open', function (event) {
+    socket.send('Hello Server!');
+});
+
+// Listen for messages
+socket.addEventListener('message', function (event) {
+    window.alert('Message from server ' + event.data);
+    console.log('Message from server', event.data);
+});
+      }
     </script>
     <style>
       #main{
@@ -20,19 +35,31 @@
         color:white;
         
       }
+      .gamebutton{
+        width: 100px;
+        margin: 20px;
+        background-color: black;
+        color: white;
+        border: 1px solid white;
+        padding: 15px;
+      }
+      #firstheader{
+        margin: 20px;
+        padding-top: 20px;
+      }
     </style>
   </head>
   <body>
     <div id="main">
       <center>
-      <h4>Choose what to do</h4>
+      <h4 id="firstheader">Choose what to do</h4>
       <table>
         <tr>
           <th>
-            <input type="button" id="newgame" onclick="newgame()" value="newgame"/>
+            <input type="button" id="newgame" onclick="newgame()" value="new game" class="gamebutton"/>
           </th>
           <th>
-            <input type="button" id="joingame" onclick="joingame()" value="joingame"/>
+            <input type="button" id="joingame" onclick="joingame()" value="join game" class="gamebutton"/>
           </th>
         </tr>
       
