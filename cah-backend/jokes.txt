@@ -1,0 +1,321 @@
+draw_black: 88
+black: Mr. and Mrs. Diaz, we called you in because we're concerned about Cynthia. Are you aware that your daughter is __________?
+
+, white: Being a motherfucking sorcerer.
+
+black: When I am President, I will create the Department of __________.
+
+, white: The Jews.
+
+black: Dude, do not go in that bathroom. There's __________ in there.
+
+, white: A sad handjob.
+
+black: TSA guidelines now prohibit __________ on airplanes.
+
+, white: The heart of a child.
+
+black: The new Chevy Tahoe. With the power and space to take __________ everywhere you go.
+
+, white: A mopey zoo lion.
+
+black: Life for American Indians was forever changed when the White Man introduced them to __________.
+
+, white: Cards Against Humanity.
+
+black: What is Batman's guilty pleasure?
+
+, white: Hope.
+
+black: White people are like __________.
+
+, white: Stephen Hawking talking dirty.
+
+black: Instead of coal, Santa now gives the bad children __________.
+
+, white: Seven dead and three in critical condition.
+
+black: Next from J.K. Rowling: Harry Potter and the Chamber of _________.
+
+, white: Getting drugs off the street and into my body.
+
+black: Today on Maury: "Help! My son is __________!"
+
+, white: Looking in the mirror, applying lipstick, and whispering "tonight, you will have sex with Tom Cruise."
+
+black: Alternative medicine is now embracing the curative powers of __________.
+
+, white: Fox News.
+
+black: My fellow Americaans: Before this decade is out, we will have __________ on the moon!
+
+, white: Poor people.
+
+black: Bravo's new reality show features eight washed up celebrities living with __________.
+
+, white: Brading three penises into a twizzler.
+
+black: It's a pity that kids these days are all getting involved with __________.
+
+, white: Fucking my sister.
+
+black: __________. Betcha can't have just one!
+
+, white: One trillion dollars.
+
+black: What would grandma find disturbing, yet oddly charming?
+
+, white: My inner demons.
+
+black: Why do I hurt all over?
+
+, white: Harry Potter erotica.
+
+black: This season at Steppenwolf, Samuel Beckett's classic existential play: Waiting for __________.
+
+, white: Opposable thumbs.
+
+black: Uh, hey guys, I know this was my idea, but I'm having serious doubts about __________.
+
+, white: A middle-aged man on roller skates.
+
+black: Kids, I don't need drugs to get high. I'm high on __________.
+
+, white: Illegal immigrants.
+
+black: During sex, I like to think about __________.
+
+, white: GoGurt.
+
+black: If you can't be with the one you love, love __________.
+
+, white: Chemical weapons.
+
+black: What's a girl's best friend?
+
+, white: Seeing Grandma naked.
+
+black: What's my secret power?
+
+, white: A pyramid of severed heads.
+
+black: Old MacDonald had __________. E-I-E-i-O.
+
+, white: The screams...the terrible screams.
+
+black: Do NOT go here! Found __________ in my Kung Pao chicken!
+
+, white: Spectacular abs.
+
+black: After four platinum albums and three Grammys, It's time to get back to my root, to what inspired me to make music in the first place: __________.
+
+, white: A fart so powerful that it wakes the giants from their thousand-year slumber.
+
+black: A romantic, candlelit dinner would be incomplete without __________.
+
+, white: Nipple blades.
+
+black: What made my first kiss so awkward?
+
+, white: All the dudes I've fucked.
+
+black: Here is the church Here is the steeple Open the doors And there is __________.
+
+, white: A micropig wearing a tiny raincoat and booties.
+
+black: What's Teach For America using to inspire inner city student to succeed?
+
+, white: Barack Obama.
+
+black: Coming to Broadway this season, __________: The Musical.
+
+, white: Liberals.
+
+black: I'm sorry, Professor, but I couldn't complete my homework because of __________.
+
+, white: Natural male enhancement.
+
+black: Dear Abby, I'm having some trouble with __________ and would like your advice.
+
+, white: 50 mg of Zoloft daily.
+
+black: A recent laboratory study shows that undergraduates have 50% less sex after being exposed to __________.
+
+, white: A whole thing of butter/
+
+black: IF you like __________. YOU MIGHT BE A REDNECK.
+
+, white: Giving 110%.
+
+black: __________. That was so metal.
+
+, white: The wifi password.
+
+black: What's there a ton of in heaven?
+
+, white: A live studio audience.
+
+black: __________: kid-tested, mother-approved.
+
+, white: Half-assed foreplay.
+
+black: This is the way the world ends Not with a bang but with __________.
+
+, white: The Trail of Tears.
+
+black: What's that sound?
+
+, white: Men.
+
+black: Check me out, yo! I call this dance move "__________."
+
+, white: Getting fingered.
+
+black: While the United States raced the Soviet Union to the moon, the Mexican government funneled millions of pesos into research on __________.
+
+, white: Flightless birds.
+
+black: When I am a billionaire, I shall erect a 50-foot statue to commemorate __________.
+
+, white: Being on fire.
+
+black: Well if you'll excuse me, gentlemen, I have a date with __________.
+
+, white: Emotions.
+
+black: Fun tip! When your man asks you to go down on him, try surprising him with __________ instead.
+
+, white: Jobs.
+
+black: Military historians remember Alexander the Great for his brilliant use of __________ against the Persians.
+
+, white: Multiple stab wounds.
+
+black: Daddy, why is mommy crying?
+
+, white: Agriculture.
+
+black: Next on ESPN2: The World Series of __________.
+
+, white: White privilege.
+
+black: How did I lose my virginity?
+
+, white: My Uber driver, Pavel.
+
+black: Make a haiku.
+
+, white: Still being a virgin.
+
+black: Why can't I sleep at night?
+
+, white: Man meat.
+
+black: In the new Disney Channel Original Movie, Hannah Montana struggles with __________ for the first time.
+
+, white: A tiny, gay guitar called a ukulele.
+
+black: War! What is it good for?
+
+, white: The placenta.
+
+black: __________. High five, bro.
+
+, white: Shapeshifters.
+
+black: What will always get you laid?
+
+, white: This month's mass shooting.
+
+black: But before I kill you, Mr. Bond, I must show you __________.
+
+, white: Not reciprocating oral sex.
+
+black: As the mon of five rambunctious boys, I'm no stranger to __________.
+
+, white: the KKK.
+
+black: Maybe she's born with it. Maybe it's __________.
+
+, white: An oversized lollipop.
+
+black: What
+
+, white: Child beauty pageants.
+
+black: __________. It's a trap!
+
+, white: The inevitable head death of the universe.
+
+black: Hey Reddit! I'm __________. Ask me anything.
+
+, white: Authentic Mexican cuisine.
+
+black: Just saw this upsetting video! Please retweet!! #stop__________
+
+, white: Gloryholes.
+
+black: Just once, I'd like to hear you say "Thanks, Mom. Thanks for __________."
+
+, white: Preteens.
+
+black: 50% of all marriages end in __________.
+
+, white: Vigorous jazz hands.
+
+black: Click Here for __________!!!
+
+, white: Poorly-timed Holocaust jokes.
+
+black: The class field trip was completely ruined by __________.
+
+, white: Penis breath.
+
+black: What gives me uncontrollable gas?
+
+, white: Emerging from the sea and rampaging through Tokyo.
+
+black: I'm LeBron James, and when I'm not slamming dunk, I love __________.
+
+, white: Solving problems with violence.
+
+black: What ended my last relationship?
+
+, white: Object permanence.
+
+black: Why am I sticky?
+
+, white: The Devil himself.
+
+black: I get by with a little help from __________.
+
+, white: The bombing of Nagasaki.
+
+black: What is George W. Bush thinking about right now?
+
+, white: Sex with animals.
+
+black: I'm going on a cleanse this week. Nothing but kale juice and __________.
+
+, white: Hillary Clinton's emails
+
+black: What are my parents hiding from me?
+
+, white: My black ass.
+
+black: What never fails to liven up the party?
+
+, white: The glass ceiling.
+
+black: I got 99 problems but __________ ain't one.
+
+, white: Bees?
+
+black: Hey guys, welcome to Chili's! Would you like to start the night off right with __________?
+
+, white: Racially-biased SAT questions.
+
+black: After eight years in the White House, how is Obama finally letting loose?
+
+, white: William Shatner.
+
