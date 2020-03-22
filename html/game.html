@@ -1,0 +1,235 @@
+<html>
+    <head>
+        <title>
+            Cards Against Humanity
+        </title>
+        <style>
+            #left{
+                width: 80%;
+                height:100%;
+                display:inline-block;
+            }
+            #right{
+                width:19.5%;
+                height:100%;
+                float: right;
+                border-left:1px solid white;
+            }
+            #messagetext{
+                width: 100%;
+                height: 4%;
+            }
+            #chat{
+                width:100%;
+                height:96%;
+            }
+            body{
+                background-color: black;
+                color:white;
+            }
+            #dashboard{
+                width: 100%;
+                height:40%;
+                background-color: white;
+                color:black;
+            }
+            #streams{
+                width:100%;
+                height: 60%;
+            }
+            .card{
+                height:49.8%;
+                width:24.8%;
+                border: 1px solid black;
+                float: left;
+            }
+            #card0{
+                background-color: black;
+            }
+            #menu{
+                width:100%;
+                height: 9%;
+            }
+            .submit{
+                float:right;
+                background-color: white;
+                border:0px;
+                font-size: medium;
+                margin:1%;
+            }
+            .menubutton{
+                height: 100%;
+                border: 0px;
+                background-color: white;
+                width:10%;
+            }
+            #cards{
+                height:90%;
+                width:100%;
+            }
+            #game{
+                display:none;
+            }
+            #startup{
+                width:25%;
+                height:20%;
+                margin-left: auto;
+                margin-top: 15%;
+                margin-bottom: auto;
+                margin-right: auto;
+                background-color:black;
+                color:white;
+                
+            }
+            .gamebutton{
+                width: 100px;
+                margin: 20px;
+                background-color: black;
+                color: white;
+                border: 1px solid white;
+                padding: 15px;
+            }
+            #firstheader{
+                margin: 20px;
+                padding-top: 20px;
+            }
+            #joingamemenu{
+                color: white;
+                display: none;
+            }
+            #newgamemenu{
+                display: none;
+                border: 1px solid white;
+            }
+            .startfields{
+                margin: 2%;
+            }
+        </style>
+        <script>
+            var isopen = false;
+            const socket = new WebSocket('ws://localhost:3012');
+            var username = "";
+            var gameid = 0;
+            socket.addEventListener('open', function (event) {
+                isopen = true;
+            });
+
+            function show_score(){
+                document.getElementById("cards").style.display = "none";
+
+            }
+            function show_board(){
+                document.getElementById("cards").style.display = "block";
+            }
+            function submit(param){
+                
+            }
+            
+            function newgame(){
+                
+                document.getElementById("firstscreen").style.display = "none";
+            }
+            function joingame(){
+                document.getElementById("firstscreen").style.display = "none";
+                document.getElementById("joingamemenu").style.display = "block";
+            }
+            function join(){
+                if(isopen){
+                    document.getElementById("startup").style.display = "none";
+                    document.getElementById("game").style.display = "block";
+                    username = document.getElementById("userid").value;
+                    gameid = document.getElementById("gameid").value;
+                    let CreateUser = {
+                        gameid: gameid,
+                        kind: "Admin",
+                        task: "CreateUser",
+                        data: username,
+                    }
+                    let JoinRequest = {
+                        gameid: gameid,
+                        kind: "Admin",
+                        task: "JoinGame",
+                        data: gameid,
+                    }
+                    socket.send(JSON.stringify(JoinRequest));
+                    socket.send(JSON.stringify(CreateUser));
+                }else{
+                    window.alert("web socket didn't open");
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div id="startup">
+            <center>
+            <div id="firstscreen">
+                <h4 id="firstheader">Choose what to do</h4>
+                <table>
+                    <tr>
+                        <th>
+                        <input type="button" id="newgame" onclick="newgame()" value="new game" class="gamebutton"/>
+                        </th>
+                        <th>
+                        <input type="button" id="joingame" onclick="joingame()" value="join game" class="gamebutton"/>
+                        </th>
+                    </tr>   
+                </table>
+            </div>
+            <div id="newgamemenu">
+
+            </div>
+            <div id="joingamemenu">
+                <h4>Join Game</h4>
+                <input type="text" id="gameid" placeholder="enter game id" class="startfields"/>
+                <input type="text" id="userid" placeholder="enter prefered username" class="startfields"/>
+                <br/>
+                <br/>
+                <input type="button" id="submitjoingame" onclick="join()" value="Join Game"/>
+            </div>
+        </center>
+          </div>
+        <div id="game">
+            <div id="left">
+                <div id="streams"></div>
+                <div id="dashboard">
+                    <div id="menu">
+                        <input type="button" value="skip" onclick="submit(0)" class="menubutton"/>
+                        <input type="button" value="cards" onclick="show_board()" class="menubutton"/>
+                        <input type="button" value="score board" onclick="show_score()" class="menubutton"/>
+                        
+                    </div>
+                    <div id="cards">
+                        <div id="card0" clas="black_card" class="card">
+                            
+                        </div>
+                        <div id="card1" clas="white_card" class="card">
+                            <input type="button" value="submit" class="submit" onclick="submit(1)"/>
+                        </div>
+                        <div id="card2" clas="white_card" class="card">
+                            <input type="button" value="submit" class="submit" onclick="submit(2)"/>
+                        </div>
+                        <div id="card3" clas="white_card" class="card">
+                            <input type="button" value="submit" class="submit" onclick="submit(3)"/>
+                        </div>
+                        <div id="card4" clas="white_card" class="card">
+                            <input type="button" value="submit" class="submit" onclick="submit(4)"/>
+                        </div>
+                        <div id="card5" clas="white_card" class="card">
+                            <input type="button" value="submit" class="submit" onclick="submit(5)"/>
+                        </div>
+                        <div id="card6" clas="white_card" class="card">
+                            <input type="button" value="submit" class="submit" onclick="submit(6)"/>
+                        </div>
+                        <div id="card7" clas="white_card" class="card">
+                            <input type="button" value="submit" class="submit" onclick="submit(7)"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="right">
+                <div id="chat"></div>
+                <input type="text" placeholder="Enter text to chat." id="messagetext"/>
+            </div>
+        </div>
+    </body>
+</html>

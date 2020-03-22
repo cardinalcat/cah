@@ -29,6 +29,16 @@ impl Card {
 pub struct User {
     white_cards: Vec<Card>,
     black_cards: Vec<Card>,
+    username: String,
+    hash: u64,
+}
+impl User{
+    pub fn score(&self) -> usize{
+        self.black_cards.len()
+    }
+    pub fn new(username: String, hash: u64) -> Self{
+        User {white_cards: Vec::with_capacity(7), black_cards: Vec::new(), hash, username }
+    }
 }
 pub struct Game {
     users: Vec<User>,
@@ -43,10 +53,12 @@ impl Game {
         let mut bcontents = String::new();
         File::open("black-cards.json")
             .expect("no black cards")
-            .read_to_string(&mut bcontents);
+            .read_to_string(&mut bcontents)
+            .unwrap();
         File::open("white-cards.json")
             .expect("no white cards")
-            .read_to_string(&mut wcontents);
+            .read_to_string(&mut wcontents)
+            .unwrap();
         let mut draw_white: Vec<Card> = Vec::new();
         let mut draw_black: Vec<Card> = Vec::new();
         for card in bcontents.split("|") {
