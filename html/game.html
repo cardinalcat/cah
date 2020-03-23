@@ -125,9 +125,20 @@
                 
             }
             
-            function newgame(){
-                
+            function newgame(){             
                 document.getElementById("firstscreen").style.display = "none";
+                document.getElementById("newgamemenu").style.display = "block";
+                let startgame = {
+                    gameid: "",
+                    kind: "Admin",
+                    task: "StartGame",
+                    data: "",
+                }
+                if(isopen){
+                    socket.send(JSON.stringify(startgame));
+                }else{
+                    window.alert("unable to connect to server");
+                }
             }
             function joingame(){
                 document.getElementById("firstscreen").style.display = "none";
@@ -145,13 +156,6 @@
                         task: "CreateUser",
                         data: username,
                     }
-                    let JoinRequest = {
-                        gameid: gameid,
-                        kind: "Admin",
-                        task: "JoinGame",
-                        data: gameid,
-                    }
-                    socket.send(JSON.stringify(JoinRequest));
                     socket.send(JSON.stringify(CreateUser));
                 }else{
                     window.alert("web socket didn't open");
@@ -176,7 +180,10 @@
                 </table>
             </div>
             <div id="newgamemenu">
-
+                <input type="text" id="useridnew" placeholder="enter prefered username" class="startfields"/>
+                <br/>
+                <br/>
+                <input type="button" id="submitnewgame" onclick="startgame()" value="Start Game"/>
             </div>
             <div id="joingamemenu">
                 <h4>Join Game</h4>

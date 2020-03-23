@@ -32,12 +32,17 @@ pub struct User {
     username: String,
     hash: u64,
 }
-impl User{
-    pub fn score(&self) -> usize{
+impl User {
+    pub fn score(&self) -> usize {
         self.black_cards.len()
     }
-    pub fn new(username: String, hash: u64) -> Self{
-        User {white_cards: Vec::with_capacity(7), black_cards: Vec::new(), hash, username }
+    pub fn new(username: String) -> Self {
+        User {
+            white_cards: Vec::with_capacity(7),
+            black_cards: Vec::new(),
+            hash: 12,
+            username,
+        }
     }
 }
 pub struct Game {
@@ -109,5 +114,11 @@ impl Game {
     }
     pub fn count_white(&self) -> usize {
         self.draw_white.len()
+    }
+    pub fn add_user(&mut self, user: User){
+        self.users.push(user);
+    }
+    pub fn get_hash(&self) -> u16{
+        self.hash
     }
 }
