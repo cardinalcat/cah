@@ -6,7 +6,7 @@ use ws::WebSocket;
 use std::option::Option;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use crate::network::Packet;
+use crate::network::{Packet, Operation, PacketType};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub enum Color {
@@ -55,6 +55,9 @@ impl User {
     pub fn send_packet(&self, packet: Packet) -> std::result::Result<(), ws::Error> {
         self.sender
             .send(ws::Message::text(serde_json::to_string(&packet).unwrap()))
+    }
+    pub fn get_username(&self) -> String{
+        self.username.clone()
     }
 }
 pub struct Game {
@@ -143,6 +146,23 @@ impl Game {
         }
         None
     }
+    pub fn handle_event(&mut self, packet: &Packet){
+        println!("packet: {:?}", packet);
+        match packet.get_task(){
+            StartGame => panic!("game start requested multiple times on the same thread"),
+            CreateUser => panic!("user should already have been created"),
+            DrawWhite => {
+                let white_card = self.draw_white();
+                let found_user = self.search_users(packet.get_username());
+                     if let Some(user) = found_user{
+                        let data = white_card.get_text();
+                        let packet = Packet::new(self.hash, PacketType::Game, Operation::DrawWhite, data, packet.get_username());
+                        user.send_packet(packet).unwrap();
+                     }
+                },
+            
+        }
+    }
     pub fn count_black(&self) -> usize {
         self.draw_black.len()
     }
@@ -154,5 +174,13 @@ impl Game {
     }
     pub fn get_hash(&self) -> u16 {
         self.hash
+    }
+    pub fn search_users(&self, username: String) -> Option<&User>{
+        for user in self.users.iter(){
+            if user.get_username() == username{
+                return Some(user);
+            }
+        }
+        None
     }
 }

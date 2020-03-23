@@ -18,11 +18,15 @@ pub enum Operation {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Packet {
     gameid: String,
+    username: String,
     kind: PacketType,
     task: Operation,
     data: String,
 }
 impl Packet {
+    pub fn new(id: u16, kind: PacketType, task: Operation, data: String, username: String) -> Self{
+        Packet { gameid: id.to_string(), username, kind, task, data }
+    }
     pub fn get_task(&self) -> Operation {
         self.task
     }
@@ -31,5 +35,8 @@ impl Packet {
     }
     pub fn get_gameid(&self) -> String {
         self.gameid.clone()
+    }
+    pub fn get_username(&self) -> String{
+        self.username.clone()
     }
 }

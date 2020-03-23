@@ -15,7 +15,7 @@ use cah_backend::network::{Operation, Packet};
 
 fn main() {
     // Setup logging
-    let all_games: Box<Arc<Mutex<Vec<Arc<Mutex<Game>>>>>> = Box::new(Arc::new(Mutex::new(Vec::new())));
+    let all_games: Arc<Mutex<Vec<Arc<Mutex<Game>>>>> = Arc::new(Mutex::new(Vec::new()));
 
     // Listen on an address and call the closure for each connection
     if let Err(error) = listen("127.0.0.1:3012", |out| {
@@ -57,20 +57,15 @@ fn main() {
             println!("about to enter second loop ");
             while packet.get_task() != Operation::EndGame {
                 let game_item = game_lock.as_ref();
-                let game = game_item.unwrap().lock().unwrap();
-                //let mut game_vec = games.lock().unwrap();
-                //this should never happen because for each new web socket this whole thread is recreated
-                /*if packet.get_task() == Operation::CreateUser {
-                    match Game::search_guard(&game_vec, packet.get_gameid().parse::<u16>().unwrap())
-                    {
-                        Some(mut game) => game.add_user(User::new(packet.get_data(), out.clone())),
-                        None => continue,
-                    }
-                }*/
-                out.send(ws::Message::text(serde_json::to_string(&packet).unwrap()))
-                    .unwrap();
+                let mut game = game_item.unwrap().lock().unwrap();
+                if packet.get_task() != Operation::StartGame && packet.get_task() != Operation::CreateUser{
+                    game.handle_event(&packet);
+                }
                 std::mem::drop(game);
-                packet = rx.recv().unwrap();
+                packet = match rx.recv(){
+                    Ok(pack) => packet,
+                    Err(e) => break,
+                }
             }
         });
 
