@@ -2,18 +2,20 @@
 /// so will allow you to see more details about the connection by using the RUST_LOG env variable.
 extern crate ws;
 
+use std::convert::TryInto;
+use std::option::Option;
 use std::sync::{mpsc::channel, Arc, Mutex};
 use std::thread;
-use std::convert::TryInto;
+use std::boxed::Box;
 
 use ws::listen;
 
 use cah_backend::game::{Game, User};
-use cah_backend::network::{Packet, Operation};
+use cah_backend::network::{Operation, Packet};
 
 fn main() {
     // Setup logging
-    let all_games: Arc<Mutex<Vec<Arc<Mutex<Game>>>>> = Arc::new(Mutex::new(Vec::new()));
+    let all_games: Box<Arc<Mutex<Vec<Arc<Mutex<Game>>>>>> = Box::new(Arc::new(Mutex::new(Vec::new())));
 
     // Listen on an address and call the closure for each connection
     if let Err(error) = listen("127.0.0.1:3012", |out| {
@@ -21,49 +23,53 @@ fn main() {
         let games = all_games.clone();
         thread::spawn(move || {
             let mut packet: Packet = rx.recv().unwrap();
-            loop{
+            let mut gameid: u16 = packet.get_gameid().parse::<u16>().unwrap();
+            loop {
                 if packet.get_task() == Operation::StartGame {
                     let mut game_vec = games.lock().unwrap();
                     let game_instance = Game::new(game_vec.len().try_into().unwrap());
                     game_vec.push(Arc::new(Mutex::new(game_instance)));
                     break;
                 }
-                if packet.get_task() == Operation::CreateUser{
-                    let mut game_vec = games.lock().unwrap();
-                    let mut found_game = false;
-                    for game in game_vec.iter(){
-                        let mut game = game.lock().unwrap();
-                        if game.get_hash() == packet.get_gameid().parse::<u16>().unwrap(){    
-                            game.add_user(User::new(packet.get_data()));
-                            found_game = true;
+                let game_vec = games.lock().unwrap();
+                if packet.get_task() == Operation::CreateUser {
+                    match Game::search_guard(&game_vec, packet.get_gameid().parse::<u16>().unwrap())
+                    {
+                        Some(mut game) => {
+                            game.add_user(User::new(packet.get_data(), out.clone()));
+                            break;
                         }
-                    }
-                    if !found_game{
-                        //game wasn't found let the user no that
-                    }else{
-                        break;
+                        None => continue,
                     }
                 }
+                packet = rx.recv().unwrap();
+                gameid = packet.get_gameid().parse::<u16>().unwrap();
             }
+            let game_vec = games.lock().unwrap();
+            //let mut game: Option<Arc<Mutex<Game>>> = None;
+            let mut game_lock: Option<Arc<Mutex<Game>>> =
+                match Game::search_mutex(&game_vec, packet.get_gameid().parse::<u16>().unwrap()) {
+                    Some(game) => Some(game),
+                    None => None,
+                };
+            std::mem::drop(game_vec);
             //main game loop
             println!("about to enter second loop ");
             while packet.get_task() != Operation::EndGame {
-                if packet.get_task() == Operation::CreateUser{
-                    let mut game_vec = games.lock().unwrap();
-                    let mut found_game = false;
-                    for game in game_vec.iter(){
-                        let mut game = game.lock().unwrap();
-                        if game.get_hash() == packet.get_gameid().parse::<u16>().unwrap(){    
-                            game.add_user(User::new(packet.get_data()));
-                            found_game = true;
-                        }
+                let game_item = game_lock.as_ref();
+                let game = game_item.unwrap().lock().unwrap();
+                //let mut game_vec = games.lock().unwrap();
+                //this should never happen because for each new web socket this whole thread is recreated
+                /*if packet.get_task() == Operation::CreateUser {
+                    match Game::search_guard(&game_vec, packet.get_gameid().parse::<u16>().unwrap())
+                    {
+                        Some(mut game) => game.add_user(User::new(packet.get_data(), out.clone())),
+                        None => continue,
                     }
-                    if !found_game{
-                        //game wasn't found let the user no that
-                    }
-                }
+                }*/
                 out.send(ws::Message::text(serde_json::to_string(&packet).unwrap()))
                     .unwrap();
+                std::mem::drop(game);
                 packet = rx.recv().unwrap();
             }
         });

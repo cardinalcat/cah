@@ -2,6 +2,12 @@ use rand::Rng;
 use std::fs::File;
 use std::io::Read;
 use ws::WebSocket;
+
+use std::option::Option;
+use std::sync::{Arc, Mutex, MutexGuard};
+
+use crate::network::Packet;
+
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub enum Color {
     Black,
@@ -27,6 +33,7 @@ impl Card {
     }
 }
 pub struct User {
+    sender: ws::Sender,
     white_cards: Vec<Card>,
     black_cards: Vec<Card>,
     username: String,
@@ -36,13 +43,18 @@ impl User {
     pub fn score(&self) -> usize {
         self.black_cards.len()
     }
-    pub fn new(username: String) -> Self {
+    pub fn new(username: String, sender: ws::Sender) -> Self {
         User {
+            sender,
             white_cards: Vec::with_capacity(7),
             black_cards: Vec::new(),
             hash: 12,
             username,
         }
+    }
+    pub fn send_packet(&self, packet: Packet) -> std::result::Result<(), ws::Error> {
+        self.sender
+            .send(ws::Message::text(serde_json::to_string(&packet).unwrap()))
     }
 }
 pub struct Game {
@@ -109,16 +121,38 @@ impl Game {
         let hash: usize = rng.gen::<usize>() % self.draw_black.len();
         self.draw_black.remove(hash)
     }
+    //game.add_user(User::new(packet.get_data(), out.clone()));
+    pub fn search_guard(
+        game_vec: &Vec<Arc<Mutex<Self>>>,
+        gameid: u16,
+    ) -> Option<MutexGuard<'_, Game>> {
+        for temp_game in game_vec.iter() {
+            let mut game = temp_game.lock().unwrap();
+            if game.get_hash() == gameid {
+                return Some(game);
+            }
+        }
+        None
+    }
+    pub fn search_mutex(game_vec: &Vec<Arc<Mutex<Self>>>, gameid: u16) -> Option<Arc<Mutex<Game>>> {
+        for temp_game in game_vec.iter() {
+            let mut game = temp_game.lock().unwrap();
+            if game.get_hash() == gameid {
+                return Some(temp_game.clone());
+            }
+        }
+        None
+    }
     pub fn count_black(&self) -> usize {
         self.draw_black.len()
     }
     pub fn count_white(&self) -> usize {
         self.draw_white.len()
     }
-    pub fn add_user(&mut self, user: User){
+    pub fn add_user(&mut self, user: User) {
         self.users.push(user);
     }
-    pub fn get_hash(&self) -> u16{
+    pub fn get_hash(&self) -> u16 {
         self.hash
     }
 }

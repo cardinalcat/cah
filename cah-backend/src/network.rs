@@ -22,14 +22,14 @@ pub struct Packet {
     task: Operation,
     data: String,
 }
-impl Packet{
-    pub fn get_task(&self) -> Operation{
+impl Packet {
+    pub fn get_task(&self) -> Operation {
         self.task
     }
-    pub fn get_data(&self) -> String{
+    pub fn get_data(&self) -> String {
         self.data.clone()
     }
-    pub fn get_gameid(&self) -> String{
+    pub fn get_gameid(&self) -> String {
         self.gameid.clone()
     }
 }
