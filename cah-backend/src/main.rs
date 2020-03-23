@@ -48,7 +48,20 @@ fn main() {
             //main game loop
             println!("about to enter second loop ");
             while packet.get_task() != Operation::EndGame {
-                
+                if packet.get_task() == Operation::CreateUser{
+                    let mut game_vec = games.lock().unwrap();
+                    let mut found_game = false;
+                    for game in game_vec.iter(){
+                        let mut game = game.lock().unwrap();
+                        if game.get_hash() == packet.get_gameid().parse::<u16>().unwrap(){    
+                            game.add_user(User::new(packet.get_data()));
+                            found_game = true;
+                        }
+                    }
+                    if !found_game{
+                        //game wasn't found let the user no that
+                    }
+                }
                 out.send(ws::Message::text(serde_json::to_string(&packet).unwrap()))
                     .unwrap();
                 packet = rx.recv().unwrap();
