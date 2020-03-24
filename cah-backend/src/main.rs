@@ -18,7 +18,7 @@ fn main() {
     let all_games: Arc<Mutex<Vec<Arc<Mutex<Game>>>>> = Arc::new(Mutex::new(Vec::new()));
 
     // Listen on an address and call the closure for each connection
-    if let Err(error) = listen("127.0.0.1:3012", |out| {
+    if let Err(error) = listen("0.0.0.0:3012", |out| {
         let (tx, rx) = channel();
         let games = all_games.clone();
         thread::spawn(move || {
@@ -36,7 +36,7 @@ fn main() {
                 //println!("packet: {:?}", packet);
                 if packet.get_task() == Operation::StartGame {
                     let mut game_vec = games.lock().unwrap();
-                    let game_instance = Game::new(game_vec.len().try_into().unwrap());
+                    let mut game_instance = Game::new(game_vec.len().try_into().unwrap());
 
                     let pack: Packet = Packet::new(
                         game_instance.get_hash(),
@@ -45,6 +45,7 @@ fn main() {
                         game_instance.get_hash().to_string(),
                         packet.get_username(),
                     );
+                    
                     out.send(ws::Message::text(serde_json::to_string(&pack).unwrap()));
                     game_vec.push(Arc::new(Mutex::new(game_instance)));
                 }
@@ -55,6 +56,26 @@ fn main() {
                         Some(mut game) => {
                             let mut temp_game = game.lock().unwrap();
                             temp_game.add_user(User::new(packet.get_data(), out.clone()));
+                            let drawblack: Packet = Packet::new(
+                                temp_game.get_hash(),
+                                PacketType::Game,
+                                Operation::DrawBlack,
+                                temp_game.current_black().get_text(),
+                                packet.get_username(),
+                            );
+                            let pack: Packet = Packet::new(
+                                temp_game.get_hash(),
+                                PacketType::Game,
+                                Operation::CreateUser,
+                                temp_game.get_hash().to_string(),
+                                packet.get_username(),
+                            );
+                            out.send(ws::Message::text(
+                                serde_json::to_string(&drawblack).unwrap(),
+                            ));
+                            out.send(ws::Message::text(
+                                serde_json::to_string(&pack).unwrap(),
+                            ));
                             game_lock = Arc::new(Some(game.to_owned()));
                         }
                         None => continue,

@@ -66,6 +66,7 @@ pub struct Game {
     draw_black: Vec<Card>,
     discard: Vec<Card>,
     hash: u16,
+    current_black: Option<Card>,
 }
 impl Game {
     pub fn new(hash: u16) -> Self {
@@ -93,13 +94,13 @@ impl Game {
                 draw_white.push(serde_json::from_str(card).unwrap());
             }
         }
-        println!("draw_black: {}", draw_black.len());
         Game {
             users: Vec::new(),
             draw_black,
             draw_white,
             discard: Vec::new(),
             hash,
+            current_black: None,
         }
     }
     pub fn get_discard(&self) -> Vec<Card> {
@@ -136,6 +137,15 @@ impl Game {
             }
         }
         None
+    }
+    pub fn current_black(&mut self) -> Card {
+        match &self.current_black {
+            Some(card) => card.clone(),
+            None => {
+                self.current_black = Some(self.draw_black());
+                self.current_black.as_ref().unwrap().clone()
+            }
+        }
     }
     pub fn search_mutex(game_vec: &Vec<Arc<Mutex<Self>>>, gameid: u16) -> Option<Arc<Mutex<Game>>> {
         println!("gameid in search mutex: {}", gameid);
