@@ -24,8 +24,14 @@ pub struct Packet {
     data: String,
 }
 impl Packet {
-    pub fn new(id: u16, kind: PacketType, task: Operation, data: String, username: String) -> Self{
-        Packet { gameid: id.to_string(), username, kind, task, data }
+    pub fn new(id: u16, kind: PacketType, task: Operation, data: String, username: String) -> Self {
+        Packet {
+            gameid: id.to_string(),
+            username,
+            kind,
+            task,
+            data,
+        }
     }
     pub fn get_task(&self) -> Operation {
         self.task
@@ -34,9 +40,10 @@ impl Packet {
         self.data.clone()
     }
     pub fn get_gameid(&self) -> String {
+        println!("gameid in packet.get_gameid() {:?}", self.gameid);
         self.gameid.clone()
     }
-    pub fn get_username(&self) -> String{
+    pub fn get_username(&self) -> String {
         self.username.clone()
     }
 }

@@ -14,6 +14,7 @@
                 height:100%;
                 float: right;
                 border-left:1px solid white;
+                background-color: black;
             }
             #messagetext{
                 width: 100%;
@@ -109,11 +110,73 @@
             var isopen = false;
             const socket = new WebSocket('ws://localhost:3012');
             var username = "";
-            var gameid = 0;
+            var gamecode = "0";
+            
+            //var message = "";
+            //var last_message = "";
+            function changeimage(){
+                let images = ["cah1.jpeg", "cah2.jpeg", "cah3.png"];
+                let i = Math.round(Math.random() * 1000) % 3;
+                document.body.style.backgroundImage = "url(images/" + images[i] + ")";
+            }
             socket.addEventListener('open', function (event) {
                 isopen = true;
+                //message = event.data;
+                changeimage();
             });
-
+            socket.addEventListener('message', function (event) {
+                console.log('Message from server', event.data);
+                let content = JSON.parse(event.data);
+                if(content.task == "StartGame"){
+                    gamecode = content.data;
+                    console.log("gameid: " + gamecode);
+                    let drawcard = {
+                        gameid: gamecode,
+                        username: username,
+                        kind: "Game",
+                        task: "DrawWhite",
+                        data: "",
+                    }
+                    let CreateUser = {
+                        gameid: gamecode,
+                        username: username,
+                        kind: "Admin",
+                        task: "CreateUser",
+                        data: username,
+                    }
+                    socket.send(JSON.stringify(CreateUser));
+                    let count = 0;
+                    while(count < 7){
+                        socket.send(JSON.stringify(drawcard));
+                        
+                        count = count + 1;             
+                    }
+                }
+                if(content.task == "DrawWhite"){
+                    let card1 = document.getElementById("content1");
+                    let card2 = document.getElementById("content2");
+                    let card3 = document.getElementById("content3");
+                    let card4 = document.getElementById("content4");
+                    let card5 = document.getElementById("content5");
+                    let card6 = document.getElementById("content6");
+                    let card7 = document.getElementById("content7");
+                    let cards = [card1, card2, card3, card4, card5, card6, card7];
+                    let foundcard = false;
+                    cards.forEach(card => {
+                        if(card.innerHTML == "" && !foundcard){
+                            card.innerHTML = content.data;
+                            foundcard = true;
+                        }
+                    });
+                } 
+            });
+            //only use this as a way of recv data when absolutely nessisary the event listener
+            //shoud be used whenever possible
+            /*function recv(){
+                while(last_message == message){
+                    setTimeout(function (){}, 1000);
+                } 
+            }*/
             function show_score(){
                 document.getElementById("cards").style.display = "none";
 
@@ -122,20 +185,48 @@
                 document.getElementById("cards").style.display = "block";
             }
             function submit(param){
-                
+                switch(param){
+                    case 1: { document.getElementById("content1").innerHTML = ""; break;}
+                    case 2: { document.getElementById("content2").innerHTML = ""; break; }
+                    case 3: { document.getElementById("content3").innerHTML = ""; break; }
+                    case 4: { document.getElementById("content4").innerHTML = ""; break; }
+                    case 5: { document.getElementById("content5").innerHTML = ""; break; }
+                    case 6: { document.getElementById("content6").innerHTML = ""; break; }
+                    case 7: { document.getElementById("content7").innerHTML = ""; break; }
+                }
+                let drawcard = {
+                    gameid: gamecode,
+                    username: username,
+                    kind: "Game",
+                    task: "DrawWhite",
+                    data: "",
+                }
+                if(isopen){
+                    socket.send(JSON.stringify(drawcard));
+                }
             }
             
             function newgame(){             
                 document.getElementById("firstscreen").style.display = "none";
                 document.getElementById("newgamemenu").style.display = "block";
+                
+            }
+            function startgame(){
+                username = document.getElementById("useridnew").value;
+                
                 let startgame = {
-                    gameid: "",
+                    gameid: gamecode,
+                    username: "",
                     kind: "Admin",
                     task: "StartGame",
                     data: "",
                 }
+
                 if(isopen){
                     socket.send(JSON.stringify(startgame));
+                    document.getElementById("startup").style.display = "none";
+                    document.getElementById("game").style.display = "block";
+                    
                 }else{
                     window.alert("unable to connect to server");
                 }
@@ -149,9 +240,10 @@
                     document.getElementById("startup").style.display = "none";
                     document.getElementById("game").style.display = "block";
                     username = document.getElementById("userid").value;
-                    gameid = document.getElementById("gameid").value;
+                    gamecode = document.getElementById("gameid").value;
                     let CreateUser = {
-                        gameid: gameid,
+                        gameid: gamecode,
+                        username: username,
                         kind: "Admin",
                         task: "CreateUser",
                         data: username,
@@ -210,24 +302,31 @@
                             
                         </div>
                         <div id="card1" clas="white_card" class="card">
+                            <div id="content1" class="content"></div>
                             <input type="button" value="submit" class="submit" onclick="submit(1)"/>
                         </div>
                         <div id="card2" clas="white_card" class="card">
+                            <div id="content2" class="content"></div>
                             <input type="button" value="submit" class="submit" onclick="submit(2)"/>
                         </div>
                         <div id="card3" clas="white_card" class="card">
+                            <div id="content3" class="content"></div>
                             <input type="button" value="submit" class="submit" onclick="submit(3)"/>
                         </div>
                         <div id="card4" clas="white_card" class="card">
+                            <div id="content4" class="content"></div>
                             <input type="button" value="submit" class="submit" onclick="submit(4)"/>
                         </div>
                         <div id="card5" clas="white_card" class="card">
+                            <div id="content5" class="content"></div>
                             <input type="button" value="submit" class="submit" onclick="submit(5)"/>
                         </div>
                         <div id="card6" clas="white_card" class="card">
+                            <div id="content6" class="content"></div>
                             <input type="button" value="submit" class="submit" onclick="submit(6)"/>
                         </div>
                         <div id="card7" clas="white_card" class="card">
+                            <div id="content7" class="content"></div>
                             <input type="button" value="submit" class="submit" onclick="submit(7)"/>
                         </div>
                     </div>
