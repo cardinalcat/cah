@@ -37,18 +37,18 @@ pub struct User {
     white_cards: Vec<Card>,
     black_cards: Vec<Card>,
     username: String,
-    hash: u64,
+    hash: u16,
 }
 impl User {
     pub fn score(&self) -> usize {
         self.black_cards.len()
     }
-    pub fn new(username: String, sender: ws::Sender) -> Self {
+    pub fn new(username: String, sender: ws::Sender,  id: u16) -> Self {
         User {
             sender,
             white_cards: Vec::with_capacity(7),
             black_cards: Vec::new(),
-            hash: 12,
+            hash: id,
             username,
         }
     }
@@ -59,12 +59,20 @@ impl User {
     pub fn get_username(&self) -> String {
         self.username.clone()
     }
+    pub fn get_id(&self) -> u16{
+        self.hash
+    }
+    pub fn add_white_card(&mut self, card: Card){
+        self.white_cards.push(card);
+    }
 }
 pub struct Game {
     users: Vec<User>,
     draw_white: Vec<Card>,
     draw_black: Vec<Card>,
     discard: Vec<Card>,
+    group_cards: Vec<String>,
+    judge: u16,
     hash: u16,
     current_black: Option<Card>,
 }
@@ -99,6 +107,8 @@ impl Game {
             draw_black,
             draw_white,
             discard: Vec::new(),
+            group_cards: Vec::new(),
+            judge: 0,
             hash,
             current_black: None,
         }
@@ -111,11 +121,10 @@ impl Game {
     }
     pub fn draw_white(&mut self) -> Card {
         if self.draw_white.is_empty() {
-            println!("empty");
             self.draw_white.append(&mut self.discard);
             self.discard.clear();
         }
-        //println!("draw_white: {}", self.draw_white.len());
+        
         let mut rng = rand::thread_rng();
         let hash: usize = rng.gen::<usize>() % self.draw_white.len();
         self.draw_white.remove(hash)
@@ -148,7 +157,6 @@ impl Game {
         }
     }
     pub fn search_mutex(game_vec: &Vec<Arc<Mutex<Self>>>, gameid: u16) -> Option<Arc<Mutex<Game>>> {
-        println!("gameid in search mutex: {}", gameid);
         for temp_game in game_vec.iter() {
             let mut game = temp_game.lock().unwrap();
             if game.get_hash() == gameid {
@@ -157,38 +165,20 @@ impl Game {
         }
         None
     }
-    /*pub fn handle_event(&mut self, packet: &Packet) {
-        println!("packet: {:?}", packet);
-        match packet.get_task() {
-            StartGame => panic!("game start requested multiple times on the same thread"),
-            CreateUser => panic!("user should already have been created"),
-            DrawWhite => {
-                let white_card = self.draw_white();
-                println!("card draw: {:?}", white_card);
-                let found_user = self.search_users(packet.get_username());
-                if let Some(user) = found_user {
-                    let data = white_card.get_text();
-                    let packet = Packet::new(
-                        self.hash,
-                        PacketType::Game,
-                        Operation::DrawWhite,
-                        data,
-                        packet.get_username(),
-                    );
-                    user.send_packet(packet).unwrap();
-                }
-            }
-        }
-    }*/
     pub fn count_black(&self) -> usize {
         self.draw_black.len()
     }
     pub fn count_white(&self) -> usize {
         self.draw_white.len()
     }
-    pub fn add_user(&mut self, user: User) {
-        println!("game id in adding user: {}", self.hash);
+    pub fn add_user(&mut self, user: User) -> std::result::Result<(), String> {
+        for existing_user in self.users.iter(){
+            if existing_user.get_username() == user.get_username(){
+                return Err("username in use".to_string());
+            }
+        }
         self.users.push(user);
+        Ok(())
     }
     pub fn get_hash(&self) -> u16 {
         self.hash
@@ -196,9 +186,54 @@ impl Game {
     pub fn search_users(&self, username: String) -> Option<&User> {
         for user in self.users.iter() {
             if user.get_username() == username {
+                //let usr = *user.clone();
                 return Some(user);
             }
         }
         None
+    }
+    pub fn search_users_mut(&mut self, username: String) -> Option<&mut User> {
+        for user in self.users.iter_mut() {
+            if user.get_username() == username {
+                //let usr = *user.clone();
+                return Some(user);
+            }
+        }
+        None
+    }
+    pub fn search_users_by_id(&self, id: u16) -> Option<&User> {
+        for user in self.users.iter() {
+            if user.get_id() == id {
+                return Some(user);
+            }
+        }
+        None
+    }
+    pub fn count_users(&self) -> usize{
+        self.users.len()
+    }
+    pub fn submit_card(&mut self, card_text: String){
+        self.group_cards.push(card_text);
+        println!("group cards len: {}", self.group_cards.len());
+        println!("users len {}", self.users.len());
+        if self.users.len() - 1 == self.group_cards.len(){
+            for user in self.users.iter(){
+                if user.get_id() == self.judge{
+                    for card in self.group_cards.iter(){
+                        // create and send the packet to the judge
+                        let packet: Packet = Packet::new(
+                            self.hash,
+                            PacketType::Game,
+                            Operation::SubmitCard,
+                            card.to_string(),
+                            user.get_username(),
+                        );
+                        user.send_packet(packet).unwrap();
+                    }
+                }
+            }
+            self.group_cards.clear();
+        }
+        
     }
 }

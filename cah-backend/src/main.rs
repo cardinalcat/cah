@@ -32,8 +32,6 @@ fn main() {
                     }
                 };
                 let gameid = packet.get_gameid().parse::<u16>().unwrap();
-                println!("game id after poll {}", gameid);
-                //println!("packet: {:?}", packet);
                 if packet.get_task() == Operation::StartGame {
                     let mut game_vec = games.lock().unwrap();
                     let mut game_instance = Game::new(game_vec.len().try_into().unwrap());
@@ -49,13 +47,37 @@ fn main() {
                     out.send(ws::Message::text(serde_json::to_string(&pack).unwrap()));
                     game_vec.push(Arc::new(Mutex::new(game_instance)));
                 }
+                if packet.get_task() == Operation::SubmitCard{
+                    match &*game_lock {
+                        Some(game_temp) => {
+                            let mut game = game_temp.lock().unwrap();
+                            game.submit_card(packet.get_data());
+                        },
+                        None => continue,
+                    }
+                }
                 let game_vec = games.lock().unwrap();
                 if packet.get_task() == Operation::CreateUser {
                     match Game::search_mutex(&game_vec, packet.get_gameid().parse::<u16>().unwrap())
                     {
                         Some(mut game) => {
                             let mut temp_game = game.lock().unwrap();
-                            temp_game.add_user(User::new(packet.get_data(), out.clone()));
+                            let user = User::new(packet.get_data(), out.clone(), temp_game.count_users().try_into().unwrap());
+                            match temp_game.add_user(user){
+                                Ok(_) => (),
+                                Err(e) => {
+                                    let err = Packet::new(
+                                        temp_game.get_hash(),
+                                        PacketType::Error,
+                                        Operation::CreateUserError,
+                                        e,
+                                        packet.get_username(),
+                                    );
+                                   out.send(ws::Message::text(
+                                        serde_json::to_string(&err).unwrap(),
+                                    )); 
+                                },
+                            }
                             let drawblack: Packet = Packet::new(
                                 temp_game.get_hash(),
                                 PacketType::Game,
@@ -85,13 +107,15 @@ fn main() {
                     match &*game_lock {
                         Some(game_temp) => {
                             let mut game = game_temp.lock().unwrap();
+                            let hash = game.get_hash();
                             let white_card = game.draw_white();
-
-                            let found_user = game.search_users(packet.get_username());
+                            //have draw_white() auto add the card to the user struct
+                            let found_user = game.search_users_mut(packet.get_username());
                             if let Some(user) = found_user {
+                                user.add_white_card(white_card.clone());
                                 let data = white_card.get_text();
                                 let packet = Packet::new(
-                                    game.get_hash(),
+                                    hash,
                                     PacketType::Game,
                                     Operation::DrawWhite,
                                     data,
@@ -103,16 +127,15 @@ fn main() {
                         None => continue,
                     }
                 }
-                println!("loops end");
+                
             }
         });
 
         move |msg: ws::Message| {
-            // Handle messages received on this connection
-            //println!("Server got message '{}'. ", msg);
+            
             let content = msg.clone();
             let packet: Packet = serde_json::from_str(msg.into_text().unwrap().as_str()).unwrap();
-            //println!("about to send: {:?}", packet);
+            
             match tx.send(packet) {
                 Ok(_) => (),
                 Err(e) => println!("error: {}", e),

@@ -3,6 +3,7 @@ pub enum PacketType {
     Admin,
     Message,
     Game,
+    Error,
 }
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Operation {
@@ -14,6 +15,8 @@ pub enum Operation {
     SelectWinner,
     StartGame,
     EndGame,
+    CreateUserError,
+    ChangeJudge,
 }
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Packet {
@@ -40,7 +43,6 @@ impl Packet {
         self.data.clone()
     }
     pub fn get_gameid(&self) -> String {
-        println!("gameid in packet.get_gameid() {:?}", self.gameid);
         self.gameid.clone()
     }
     pub fn get_username(&self) -> String {
