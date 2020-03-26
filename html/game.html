@@ -5,6 +5,7 @@
         </title>
         <link rel="stylesheet" media="screen and (min-width: 900px)" href="css/desktop.css">
         <link rel="stylesheet" media="screen and (max-width: 480px)" href="css/mobile.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <script src="js/main.js">
             
         </script>
@@ -49,13 +50,28 @@
           </div>
         <div id="game">
             <div id="left">
-                <div id="streams"></div>
+                <div id="streams">
+                    <div id="rules">
+                        <h1>Game Rules</h1>
+                        <h4>The Judge</h4>
+                        <ul>
+                            <li>one person plays as the judge the order of which is determined by who entered teh game first</li>
+                            <li>the board of the judge will apear blank until cards are submited</li>
+                            <li>in order to choose a winning card click that card, once a winner has been chosen the judges cards will reapear</li>
+                        </ul>
+                        <h4>Players</h4>
+                        <ul>
+                            <li>each player plays with seven cards and chooses the card that they think is funniest when combined with the black card</li>
+                            <li>in order to submit cards the card must be clicked when it is it will then remain blank until the judge has chosen a winner</li>
+                        </ul>
+                    </div>
+                </div>
                 <div id="dashboard">
                     <div id="menu">
                         <input type="button" value="skip" onclick="submit(0)" class="menubutton"/>
                         <input type="button" value="cards" onclick="show_board()" class="menubutton"/>
                         <input type="button" value="score board" onclick="show_score()" class="menubutton"/>
-                        
+                        <input type="button" value="game rules" id="gamerules" class="menubutton" onclick="gamerules()"/>
                     </div>
                     <div id="cards">
                         <div id="card0" clas="black_card" class="card">
@@ -104,6 +120,7 @@
                             </div> -->
                         </div>
                     </div>
+                    
                 </div>
             </div>
             <div id="right">

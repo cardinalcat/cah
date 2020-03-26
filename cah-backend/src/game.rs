@@ -1,10 +1,10 @@
 use rand::Rng;
 use std::fs::File;
 use std::io::Read;
-use ws::WebSocket;
 
 use std::option::Option;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::convert::TryInto;
 
 use crate::network::{Operation, Packet, PacketType};
 
@@ -19,7 +19,22 @@ pub enum Kind {
     Two,
     Three,
 }
-
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
+pub struct JudgeCard{
+    username: String,
+    text: String,
+}
+impl JudgeCard{
+    pub fn new(username: String, text: String) -> Self{
+        JudgeCard {username, text}
+    }
+    pub fn get_username(&self) -> String{
+        self.username.clone()
+    }
+    pub fn get_text(&self) -> String{
+        self.text.clone()
+    }
+}
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Card {
     id: u16,
@@ -35,7 +50,7 @@ impl Card {
 pub struct User {
     sender: ws::Sender,
     white_cards: Vec<Card>,
-    black_cards: Vec<Card>,
+    black_cards: Vec<String>,
     username: String,
     hash: u16,
 }
@@ -65,13 +80,19 @@ impl User {
     pub fn add_white_card(&mut self, card: Card){
         self.white_cards.push(card);
     }
+    pub fn add_black_card(&mut self, card_text: String){
+        self.black_cards.push(card_text);
+    }
+    pub fn get_white_cards(&self) -> Vec<Card>{
+        self.white_cards.clone()
+    }
 }
 pub struct Game {
     users: Vec<User>,
     draw_white: Vec<Card>,
     draw_black: Vec<Card>,
     discard: Vec<Card>,
-    group_cards: Vec<String>,
+    group_cards: Vec<JudgeCard>,
     judge: u16,
     hash: u16,
     current_black: Option<Card>,
@@ -90,13 +111,13 @@ impl Game {
             .unwrap();
         let mut draw_white: Vec<Card> = Vec::new();
         let mut draw_black: Vec<Card> = Vec::new();
-        for card in bcontents.split("|") {
+        for card in bcontents.split('|') {
             let card = card.trim();
             if !card.is_empty() {
                 draw_black.push(serde_json::from_str(card).unwrap());
             }
         }
-        for card in wcontents.split("|") {
+        for card in wcontents.split('|') {
             let card = card.trim();
             if !card.is_empty() {
                 draw_white.push(serde_json::from_str(card).unwrap());
@@ -136,11 +157,11 @@ impl Game {
     }
     //game.add_user(User::new(packet.get_data(), out.clone()));
     pub fn search_guard(
-        game_vec: &Vec<Arc<Mutex<Self>>>,
+        game_vec: &[Arc<Mutex<Self>>],
         gameid: u16,
     ) -> Option<MutexGuard<'_, Game>> {
         for temp_game in game_vec.iter() {
-            let mut game = temp_game.lock().unwrap();
+            let game = temp_game.lock().unwrap();
             if game.get_hash() == gameid {
                 return Some(game);
             }
@@ -156,9 +177,9 @@ impl Game {
             }
         }
     }
-    pub fn search_mutex(game_vec: &Vec<Arc<Mutex<Self>>>, gameid: u16) -> Option<Arc<Mutex<Game>>> {
+    pub fn search_mutex(game_vec: &[Arc<Mutex<Self>>], gameid: u16) -> Option<Arc<Mutex<Game>>> {
         for temp_game in game_vec.iter() {
-            let mut game = temp_game.lock().unwrap();
+            let game = temp_game.lock().unwrap();
             if game.get_hash() == gameid {
                 return Some(temp_game.clone());
             }
@@ -212,8 +233,8 @@ impl Game {
     pub fn count_users(&self) -> usize{
         self.users.len()
     }
-    pub fn submit_card(&mut self, card_text: String){
-        self.group_cards.push(card_text);
+    pub fn submit_card(&mut self, username: String, card_text: String){
+        self.group_cards.push(JudgeCard::new(username, card_text));
         println!("group cards len: {}", self.group_cards.len());
         println!("users len {}", self.users.len());
         if self.users.len() - 1 == self.group_cards.len(){
@@ -225,8 +246,8 @@ impl Game {
                             self.hash,
                             PacketType::Game,
                             Operation::SubmitCard,
-                            card.to_string(),
-                            user.get_username(),
+                            card.get_text(),
+                            card.get_username(),
                         );
                         user.send_packet(packet).unwrap();
                     }
@@ -235,5 +256,28 @@ impl Game {
             self.group_cards.clear();
         }
         
+    }
+    pub fn change_judge(&mut self){
+        match self.search_users_by_id(self.judge){
+            Some(user) => {
+                for card in user.get_white_cards().iter(){
+                    let packet: Packet = Packet::new(
+                        user.get_id(),
+                        PacketType::Game,
+                        Operation::DrawWhite,
+                        card.get_text(),
+                        user.get_username(),
+                    );
+                    user.send_packet(packet).unwrap();
+                }
+            },
+            None => panic!("user stopped existing for some reason"),
+        }
+        let user_count: u16 = self.users.len().try_into().unwrap();
+        if self.judge == user_count{
+            self.judge = 0;
+        }else{
+            self.judge = self.judge + 1;
+        }
     }
 }

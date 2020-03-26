@@ -4,9 +4,11 @@ var username = "";
 var gamecode = "0";
 var submited = false;
 var isjudge = false;
+var judgecards = [username];
 function startup(){
     socket = new WebSocket('ws://192.168.2.5:3012');
 }
+//causes problems if someone joins after card submited
 //var message = "";
 //var last_message = "";
 function changeimage(){
@@ -32,7 +34,7 @@ socket.addEventListener('message', function (event) {
             data: username,
         }
         socket.send(JSON.stringify(CreateUser));
-        
+        window.alert("game id: " + gamecode);
     }
     if(content.task == "CreateUser"){
         let drawcard = {
@@ -42,7 +44,7 @@ socket.addEventListener('message', function (event) {
             task: "DrawWhite",
             data: "",
         }
-        if(!judge){
+        if(!isjudge){
             let count = 0;
             while(count < 7){
                 socket.send(JSON.stringify(drawcard));
@@ -101,6 +103,7 @@ socket.addEventListener('message', function (event) {
         cards.forEach(card => {
             if(card.innerHTML == "" && !foundcard){
                 card.innerHTML = content.data;
+                judgecards.push(content.username);
                 foundcard = true;
             }
         });
@@ -144,7 +147,7 @@ function submit(param){
     }
     let selectuser = {
         gameid: gamecode,
-        username: username,
+        username: judgecards[param],
         kind: "Game",
         task: "SelectWinner",
         data: card.innerHTML,
@@ -155,6 +158,7 @@ function submit(param){
         submited = true;
     }else if(isjudge && isopen){
         socket.send(JSON.stringify(selectuser));
+        console.log("sent message: " + JSON.stringify(selectuser));
         isjudge = false;
     }else if(!submited && isjudge){
         show_error("unable to connect to server trying again");
@@ -180,8 +184,7 @@ function startgame(){
 
     if(isopen){
         socket.send(JSON.stringify(startgame));
-        document.getElementBy
-        Id("startup").style.display = "none";
+        document.getElementById("startup").style.display = "none";
         document.getElementById("game").style.display = "block";
         isjudge = true;
     }else{
@@ -207,6 +210,7 @@ function join(){
             task: "CreateUser",
             data: username,
         }
+        console.log("sending data: " + JSON.stringify(CreateUser));
         socket.send(JSON.stringify(CreateUser));
     }else{
         show_error("unable to connect to server trying again");
@@ -215,4 +219,14 @@ function join(){
 }
 function hiderror(){
     document.getElementById("topbar").style.display = "none";
+}
+var rules = false;
+function gamerules(){
+    if(!rules){
+        document.getElementById("rules").style.display = "block";
+        rules = true;
+    }else{
+        document.getElementById("rules").style.display = "none";
+        rules = false;
+    }
 }

@@ -131,3 +131,9 @@ body{
     height:100%;
     float: left;
 }
+#rules{
+    display: none;
+    overflow:scroll;
+    background-color: white;
+    color:black;
+}

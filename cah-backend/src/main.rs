@@ -2,7 +2,6 @@
 /// so will allow you to see more details about the connection by using the RUST_LOG env variable.
 extern crate ws;
 
-use std::boxed::Box;
 use std::convert::TryInto;
 use std::option::Option;
 use std::sync::{mpsc::channel, Arc, Mutex};
@@ -24,17 +23,16 @@ fn main() {
         thread::spawn(move || {
             let mut game_lock: Arc<Option<Arc<Mutex<Game>>>> = Arc::new(None);
             loop {
-                let mut packet: Packet = match rx.recv() {
+                let packet: Packet = match rx.recv() {
                     Ok(pack) => pack,
                     Err(e) => {
                         println!("error: {}", e);
                         break;
                     }
                 };
-                let gameid = packet.get_gameid().parse::<u16>().unwrap();
                 if packet.get_task() == Operation::StartGame {
                     let mut game_vec = games.lock().unwrap();
-                    let mut game_instance = Game::new(game_vec.len().try_into().unwrap());
+                    let game_instance = Game::new(game_vec.len().try_into().unwrap());
 
                     let pack: Packet = Packet::new(
                         game_instance.get_hash(),
@@ -44,14 +42,27 @@ fn main() {
                         packet.get_username(),
                     );
                     
-                    out.send(ws::Message::text(serde_json::to_string(&pack).unwrap()));
+                    out.send(ws::Message::text(serde_json::to_string(&pack).unwrap())).unwrap();
                     game_vec.push(Arc::new(Mutex::new(game_instance)));
+                }
+                if packet.get_task() == Operation::SelectWinner{
+                    println!("handling SelectWinner");
+                    match &*game_lock {
+                        Some(game_temp) => {
+                            let mut game = game_temp.lock().unwrap();
+                            let user = game.search_users_mut(packet.get_username()).unwrap();
+                            //store the text of the black card for the sake of the scoring
+                            user.add_black_card(packet.get_data());
+                            game.change_judge();
+                        },
+                        None => continue,
+                    }
                 }
                 if packet.get_task() == Operation::SubmitCard{
                     match &*game_lock {
                         Some(game_temp) => {
                             let mut game = game_temp.lock().unwrap();
-                            game.submit_card(packet.get_data());
+                            game.submit_card(packet.get_username(), packet.get_data());
                         },
                         None => continue,
                     }
@@ -60,7 +71,7 @@ fn main() {
                 if packet.get_task() == Operation::CreateUser {
                     match Game::search_mutex(&game_vec, packet.get_gameid().parse::<u16>().unwrap())
                     {
-                        Some(mut game) => {
+                        Some(game) => {
                             let mut temp_game = game.lock().unwrap();
                             let user = User::new(packet.get_data(), out.clone(), temp_game.count_users().try_into().unwrap());
                             match temp_game.add_user(user){
@@ -75,7 +86,7 @@ fn main() {
                                     );
                                    out.send(ws::Message::text(
                                         serde_json::to_string(&err).unwrap(),
-                                    )); 
+                                    )).unwrap(); 
                                 },
                             }
                             let drawblack: Packet = Packet::new(
@@ -94,10 +105,10 @@ fn main() {
                             );
                             out.send(ws::Message::text(
                                 serde_json::to_string(&drawblack).unwrap(),
-                            ));
+                            )).unwrap();
                             out.send(ws::Message::text(
                                 serde_json::to_string(&pack).unwrap(),
-                            ));
+                            )).unwrap();
                             game_lock = Arc::new(Some(game.to_owned()));
                         }
                         None => continue,
@@ -132,8 +143,6 @@ fn main() {
         });
 
         move |msg: ws::Message| {
-            
-            let content = msg.clone();
             let packet: Packet = serde_json::from_str(msg.into_text().unwrap().as_str()).unwrap();
             
             match tx.send(packet) {
