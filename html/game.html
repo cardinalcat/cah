@@ -1,0 +1,132 @@
+<html>
+    <head>
+        <title>
+            Cards Against Humanity
+        </title>
+        <link rel="stylesheet" media="screen and (min-width: 900px)" href="css/desktop.css">
+        <link rel="stylesheet" media="screen and (max-width: 480px)" href="css/mobile.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="js/main.js">
+            
+        </script>
+    </head>
+    <body>
+        <div id="topbar">
+            <center></center>
+            <h4 id="errmessage"></h4>
+            </center>
+            <input id="hiderror" type="button" onclick="hiderror()" value="X">
+        </div>
+        <div id="startup">
+            <center>
+            <div id="firstscreen">
+                <h4 id="firstheader">Choose what to do</h4>
+                <table>
+                    <tr>
+                        <th>
+                        <input type="button" id="newgame" onclick="newgame()" value="new game" class="gamebutton"/>
+                        </th>
+                        <th>
+                        <input type="button" id="joingame" onclick="joingame()" value="join game" class="gamebutton"/>
+                        </th>
+                    </tr>   
+                </table>
+            </div>
+            <div id="newgamemenu">
+                <input type="text" id="useridnew" placeholder="enter prefered username" class="startfields"/>
+                <br/>
+                <br/>
+                <input type="button" id="submitnewgame" onclick="startgame()" value="Start Game"/>
+            </div>
+            <div id="joingamemenu">
+                <h4>Join Game</h4>
+                <input type="text" id="gameid" placeholder="enter game id" class="startfields"/>
+                <input type="text" id="userid" placeholder="enter prefered username" class="startfields"/>
+                <br/>
+                <br/>
+                <input type="button" id="submitjoingame" onclick="join()" value="Join Game"/>
+            </div>
+        </center>
+          </div>
+        <div id="game">
+            <div id="left">
+                <div id="streams">
+                    <div id="rules">
+                        <h1>Game Rules</h1>
+                        <h4>The Judge</h4>
+                        <ul>
+                            <li>one person plays as the judge the order of which is determined by who entered teh game first</li>
+                            <li>the board of the judge will apear blank until cards are submited</li>
+                            <li>in order to choose a winning card click that card, once a winner has been chosen the judges cards will reapear</li>
+                        </ul>
+                        <h4>Players</h4>
+                        <ul>
+                            <li>each player plays with seven cards and chooses the card that they think is funniest when combined with the black card</li>
+                            <li>in order to submit cards the card must be clicked when it is it will then remain blank until the judge has chosen a winner</li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="dashboard">
+                    <div id="menu">
+                        <input type="button" value="skip" onclick="submit(0)" class="menubutton"/>
+                        <input type="button" value="cards" onclick="show_board()" class="menubutton"/>
+                        <input type="button" value="score board" onclick="show_score()" class="menubutton"/>
+                        <input type="button" value="game rules" id="gamerules" class="menubutton" onclick="gamerules()"/>
+                    </div>
+                    <div id="cards">
+                        <div id="card0" clas="black_card" class="card">
+                            
+                        </div>
+                        <div id="card1" clas="white_card" class="card">
+                            <div id="content1" class="content" onclick="submit(1)"></div>
+                            <!--<div id="wrapper1" class="wrapper">
+                                <input type="button" value="submit" class="submit" onclick="submit(1)"/>
+                            </div> -->
+                        </div>
+                        <div id="card2" clas="white_card" class="card">
+                            <div id="content2" class="content" onclick="submit(2)"></div>
+                            <!--<div id="wrapper2" class="wrapper">
+                                <input type="button" value="submit" class="submit" onclick="submit(2)"/>
+                            </div> -->
+                        </div>
+                        <div id="card3" clas="white_card" class="card">
+                            <div id="content3" class="content" onclick="submit(3)"></div>
+                            <!--<div id="wrapper3" class="wrapper">
+                                <input type="button" value="submit" class="submit" onclick="submit(3)"/>
+                            </div> -->
+                        </div>
+                        <div id="card4" clas="white_card" class="card">
+                            <div id="content4" class="content" onclick="submit(4)"></div>
+                            <!-- <div id="wrapper4" class="wrapper">
+                                <input type="button" value="submit" class="submit" onclick="submit(4)"/>
+                            </div> -->
+                        </div>
+                        <div id="card5" clas="white_card" class="card">
+                            <div id="content5" class="content" onclick="submit(5)"></div>
+                            <!--<div id="wrapper5" class="wrapper">
+                                <input type="button" value="submit" class="submit" onclick="submit(5)"/>
+                            </div> -->
+                        </div>
+                        <div id="card6" clas="white_card" class="card">
+                            <div id="content6" class="content" onclick="submit(6)"></div>
+                            <!--<div id="wrapper6" class="wrapper">
+                                <input type="button" value="submit" class="submit" onclick="submit(6)"/>
+                            </div> -->
+                        </div>
+                        <div id="card7" clas="white_card" class="card">
+                            <div id="content7" class="content"onclick="submit(7)"></div>
+                            <!-- <div id="wrapper7" class="wrapper">
+                                <input type="button" value="submit" class="submit" onclick="submit(7)"/>
+                            </div> -->
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            <div id="right">
+                <div id="chat"></div>
+                <input type="text" placeholder="Enter text to chat." id="messagetext"/>
+            </div>
+        </div>
+    </body>
+</html>
