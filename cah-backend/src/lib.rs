@@ -2,8 +2,18 @@
 extern crate serde_derive;
 #[macro_use]
 extern crate err_derive;
+#[macro_use]
+extern crate lazy_static;
+
+lazy_static! {
+    static ref GAME_COUNT: Arc<Mutex<u16>> = {
+        Arc::new(Mutex::new(0))
+    };
+}
+
 pub mod game;
 pub mod network;
+use crate::game::Game;
 
 use ws::listen;
 
@@ -91,8 +101,22 @@ async fn handle_message(
     };
 
     match packet.get_task() {
-        Operation::StartGame => Ok(()),
-        Operation::EndGame => Ok(()),
+        Operation::StartGame => {
+            let (sender, receiver): (Sender<Packet>, Receiver<Packet>) = channel(100);
+            let hash = GAME_COUNT.lock().await;
+            //games.write().await.insert(hash.to_string(), sender);
+            let hash_value: u16 = *hash;
+            let handler = tokio::spawn(async move {
+                Game::handle(hash_value, receiver).await
+            });
+            games.write().await.insert(hash.to_string(), (sender, handler));
+            Ok(())
+        },
+        Operation::EndGame => { 
+            // remove the game object, then wait for a sec for the game loop to clean up
+            // if it doesn't then abort it
+            Ok(()) 
+        },
         _ => match games.write().await.get_mut(packet.get_gameid()) {
             Some((game, _)) => match game.send(packet).await {
                 Ok(_) => Ok(()),

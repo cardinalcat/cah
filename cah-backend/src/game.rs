@@ -6,6 +6,8 @@ use std::convert::TryInto;
 use std::option::Option;
 use std::sync::{Arc, Mutex, MutexGuard};
 
+use tokio::sync::mpsc::Receiver;
+
 use crate::network::{Operation, Packet, PacketType};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -98,6 +100,13 @@ pub struct Game {
     current_black: Option<Card>,
 }
 impl Game {
+    pub async fn handle(hash: u16, mut receiver: Receiver<Packet>) -> Result<(), crate::CahError>{
+        let mut game = Game::new(hash);
+        loop {
+            let packet = receiver.recv().await;
+            /// main game loop here
+        }
+    }
     pub fn new(hash: u16) -> Self {
         let mut wcontents = String::new();
         let mut bcontents = String::new();

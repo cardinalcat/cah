@@ -14,3 +14,4 @@ serde_json = "*"
 serde = "*"
 err-derive = "*"
 tokio = {version = "*", features = ["full"]}
+lazy_static = "*"

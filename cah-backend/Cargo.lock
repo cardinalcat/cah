@@ -60,6 +60,7 @@ name = "cah-backend"
 version = "0.1.0"
 dependencies = [
  "err-derive",
+ "lazy_static",
  "rand",
  "serde",
  "serde_derive",
