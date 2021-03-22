@@ -134,6 +134,7 @@ impl Game {
                 WHITE_CARDS[card_index as usize].get_text().to_string(),
                 self.users[user_index].get_username().to_string(),
             ))?;
+            self.users[user_index].add_white_card(card_index);
         }
         let black_card = self.current_black();
         self.users[user_index].send_packet(&Packet::new(
@@ -162,7 +163,7 @@ impl Game {
             // main game loop here
             match packet.get_task() {
                 Operation::SendMessage => {
-                    for user in game.users.iter_mut() {
+                    for user in game.users.iter() {
                         if user.get_username() != packet.get_username() {
                             user.send_packet(&Packet::new(
                                 game.hash,
@@ -176,13 +177,34 @@ impl Game {
                     }
                 }
                 Operation::CreateUser => {
+                    if game.contains_user(packet.get_username()) {
+                        out_sender.send(serde_json::to_string(&Packet::new(
+                            game.hash,
+                            PacketType::Game,
+                            Operation::CreateUserError,
+                            String::from("username already in use"),
+                            packet.get_username().to_string()
+                        )).unwrap()).unwrap();
+                    }else{
                     game.users.push(User::new(
-                        create_packet.get_username().to_string(),
+                        packet.get_username().to_string(),
                         out_sender,
                     ));
-                    game.load_cards(user_index).unwrap();
-                    user_index += 1;
+                        game.load_cards(user_index).unwrap();
+                        user_index += 1;
+                    }
                 }
+                Operation::DropUser => {
+                    let mut index: Option<usize> = None;
+                    for (idx, user) in game.users.iter().enumerate() {
+                        if user.get_username() == packet.get_username() {
+                            index = Some(idx);
+                        }
+                    }
+                    if let Some(user_idx) = index {
+                        game.users.remove(user_idx);
+                    }
+                },
                 _ => {
                     unimplemented!();
                 }
@@ -199,6 +221,14 @@ impl Game {
             hash,
             current_black: None,
         }
+    }
+    pub fn contains_user(&self, username: &str) -> bool {
+        for user in self.users.iter() {
+            if username == user.get_username() {
+                return true;
+            }
+        }
+        false
     }
     /*pub fn get_discard(&self) -> Vec<Card> {
         self.discard.clone()

@@ -173,7 +173,18 @@ function submit(param){
 function newgame(){             
     document.getElementById("firstscreen").style.display = "none";
     document.getElementById("newgamemenu").style.display = "block";
-    
+    window.addEventListener("beforeunload", function(e) {
+        let dropuser = {
+              gameid: gamecode,
+              username: username,
+              kind: "Game",
+              task: "DropUser",
+              data: "",
+        }
+        console.log("unloading");
+        socket.send(JSON.stringify(dropuser));
+        window.alert("are you sure you want to leave?");
+    });
 }
 function startgame(){
     username = document.getElementById("useridnew").value;

@@ -11,6 +11,7 @@ pub enum Operation {
     DrawBlack,
     SendMessage,
     CreateUser,
+    DropUser,
     SubmitCard,
     SelectWinner,
     StartGame,
