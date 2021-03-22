@@ -1,6 +1,4 @@
 use rand::Rng;
-use std::fs::File;
-use std::io::Read;
 
 use std::convert::TryInto;
 use std::option::Option;
@@ -125,17 +123,42 @@ pub struct Game {
     current_black: Option<u16>,
 }
 impl Game {
+    pub fn load_cards(&mut self, user_index: usize) -> Result<(), CahError> {
+        for _ in 0..7 {
+            let card_index = self.draw_white();
+            // I should make fix the case when this fails, but other still connected
+            self.users[user_index].send_packet(&Packet::new(
+                self.hash,
+                PacketType::Game,
+                Operation::DrawWhite,
+                WHITE_CARDS[card_index as usize].get_text().to_string(),
+                self.users[user_index].get_username().to_string(),
+            ))?;
+        }
+        let black_card = self.current_black();
+        self.users[user_index].send_packet(&Packet::new(
+            self.hash,
+            PacketType::Game,
+            Operation::DrawBlack,
+            BLACK_CARDS[black_card as usize].get_text().to_string(),
+            self.users[user_index].get_username().to_string(),
+        ))?;
+        Ok(())
+    }
     pub async fn handle(
         hash: u16,
-        mut receiver: Receiver<Packet>,
+        mut receiver: Receiver<(Packet, ws::Sender)>,
         create_packet: Packet,
         sender: ws::Sender,
     ) -> Result<(), crate::CahError> {
         let mut game = Game::new(hash);
+        let mut user_index = 0;
         game.users
             .push(User::new(create_packet.get_username().to_string(), sender));
+        game.load_cards(user_index).unwrap();
+        user_index += 1;
         loop {
-            let packet = receiver.recv().await.unwrap();
+            let (packet, out_sender) = receiver.recv().await.unwrap();
             // main game loop here
             match packet.get_task() {
                 Operation::SendMessage => {
@@ -152,6 +175,14 @@ impl Game {
                         }
                     }
                 }
+                Operation::CreateUser => {
+                    game.users.push(User::new(
+                        create_packet.get_username().to_string(),
+                        out_sender,
+                    ));
+                    game.load_cards(user_index).unwrap();
+                    user_index += 1;
+                }
                 _ => {
                     unimplemented!();
                 }
@@ -159,30 +190,6 @@ impl Game {
         }
     }
     pub fn new(hash: u16) -> Self {
-        let mut wcontents = String::new();
-        let mut bcontents = String::new();
-        File::open("black-cards.json")
-            .expect("no black cards")
-            .read_to_string(&mut bcontents)
-            .unwrap();
-        File::open("white-cards.json")
-            .expect("no white cards")
-            .read_to_string(&mut wcontents)
-            .unwrap();
-        let mut draw_white: Vec<Card> = Vec::new();
-        let mut draw_black: Vec<Card> = Vec::new();
-        for card in bcontents.split('|') {
-            let card = card.trim();
-            if !card.is_empty() {
-                draw_black.push(serde_json::from_str(card).unwrap());
-            }
-        }
-        for card in wcontents.split('|') {
-            let card = card.trim();
-            if !card.is_empty() {
-                draw_white.push(serde_json::from_str(card).unwrap());
-            }
-        }
         Game {
             users: Vec::new(),
             discard: Vec::new(),
@@ -204,9 +211,9 @@ impl Game {
             self.discard.clear();
         }
         let mut rng = rand::thread_rng();
-        let mut hash: u16 = rng.gen::<u16>() % BLACK_CARDS.len() as u16;
+        let mut hash: u16 = rng.gen::<u16>() % WHITE_CARDS.len() as u16;
         while self.discard_black.contains(&hash) {
-            hash = rng.gen::<u16>() % BLACK_CARDS.len() as u16;
+            hash = rng.gen::<u16>() % WHITE_CARDS.len() as u16;
         }
         hash
     }

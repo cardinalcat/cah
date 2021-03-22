@@ -191,6 +191,7 @@ function startgame(){
         document.getElementById("startup").style.display = "none";
         document.getElementById("game").style.display = "block";
         isjudge = true;
+
     }else{
         show_error("unable to connect to server trying again");
         startup();
@@ -210,7 +211,7 @@ function join(){
         let CreateUser = {
             gameid: gamecode,
             username: username,
-            kind: "Admin",
+            kind: "Game",
             task: "CreateUser",
             data: username,
         }

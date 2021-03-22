@@ -80,7 +80,7 @@ impl Default for GameEngine {
     }
 }
 
-type GameStore = Arc<RwLock<HashMap<String, (Sender<Packet>, JoinHandle<Result<(), CahError>>)>>>;
+type GameStore = Arc<RwLock<HashMap<String, (Sender<(Packet, ws::Sender)>, JoinHandle<Result<(), CahError>>)>>>;
 
 impl GameEngine {
     pub fn new() -> Self {
@@ -143,12 +143,13 @@ async fn handle_message(
             return Ok(());
         }
     };
+    println!("received message: {:?}", packet);
 
     match packet.get_task() {
         Operation::StartGame => {
             // I forgot the on who starts the game is also a player, so out also
             // needs to be sent to that game thread
-            let (sender, receiver): (Sender<Packet>, Receiver<Packet>) = channel(100);
+            let (sender, receiver): (Sender<(Packet, ws::Sender)>, Receiver<(Packet, ws::Sender)>) = channel(100);
             let mut hash = IDMANAGER.lock().await;
             //games.write().await.insert(hash.to_string(), sender);
             let hash_value: u16 = match hash.get_id() {
@@ -161,11 +162,10 @@ async fn handle_message(
             let handler = tokio::spawn(async move {
                 Game::handle(hash_value, receiver, packet.clone(), out).await
             });
-            games.write().await.insert(
-                
-                hash_value.to_string(),
-                (sender, handler),
-            );
+            games
+                .write()
+                .await
+                .insert(hash_value.to_string(), (sender, handler));
             Ok(())
         }
         Operation::EndGame => {
@@ -174,7 +174,7 @@ async fn handle_message(
             Ok(())
         }
         _ => match games.write().await.get_mut(packet.get_gameid()) {
-            Some((game, _)) => match game.send(packet).await {
+            Some((game, _)) => match game.send((packet, out.clone())).await {
                 Ok(_) => Ok(()),
                 Err(_e) => {
                     out.send(Packet::report_error(String::from("game has ended")))?;
