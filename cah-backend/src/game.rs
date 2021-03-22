@@ -14,6 +14,20 @@ use tokio::sync::mpsc::Receiver;
 use crate::network::{Operation, Packet, PacketType};
 use std::hash::{Hash, Hasher};
 
+lazy_static! {
+    static ref WHITE_CARDS: Vec<Card> = {
+        let text = include_str!("white-cards.json");
+        serde_json::from_str(text).unwrap()
+    };
+}
+
+lazy_static! {
+    static ref BLACK_CARDS: Vec<Card> = {
+        let text = include_str!("black-cards.json");
+        serde_json::from_str(text).unwrap()
+    };
+}
+
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub enum Color {
     Black,
@@ -34,11 +48,11 @@ impl JudgeCard {
     pub fn new(username: String, text: String) -> Self {
         JudgeCard { username, text }
     }
-    pub fn get_username(&self) -> String {
-        self.username.clone()
+    pub fn get_username(&self) -> &str {
+        &self.username
     }
-    pub fn get_text(&self) -> String {
-        self.text.clone()
+    pub fn get_text(&self) -> &str {
+        &self.text
     }
 }
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -53,10 +67,11 @@ impl Card {
         self.text.clone()
     }
 }
+/// represents a client interacting with the game
 pub struct User {
     sender: ws::Sender,
-    white_cards: Vec<Card>,
-    black_cards: Vec<String>,
+    white_cards: Vec<u16>,
+    black_cards: Vec<u16>,
     username: String,
     hash: u16,
 }
@@ -87,25 +102,27 @@ impl User {
     pub fn get_id(&self) -> u16 {
         self.hash
     }
-    pub fn add_white_card(&mut self, card: Card) {
+    pub fn add_white_card(&mut self, card: u16) {
         self.white_cards.push(card);
     }
-    pub fn add_black_card(&mut self, card_text: String) {
-        self.black_cards.push(card_text);
+    pub fn add_black_card(&mut self, card: u16) {
+        self.black_cards.push(card);
     }
-    pub fn get_white_cards(&self) -> Vec<Card> {
-        self.white_cards.clone()
+    pub fn get_white_cards(&self) -> &[u16] {
+        &self.white_cards
     }
 }
 pub struct Game {
     users: Vec<User>,
-    draw_white: Vec<Card>,
-    draw_black: Vec<Card>,
-    discard: Vec<Card>,
+    //draw_white: Vec<Card>,
+    //draw_black: Vec<Card>,
+    discard: Vec<u16>,
+    // black cards that have already been used
+    discard_black: Vec<u16>,
     group_cards: Vec<JudgeCard>,
     judge: u16,
     hash: u16,
-    current_black: Option<Card>,
+    current_black: Option<u16>,
 }
 impl Game {
     pub async fn handle(
@@ -168,35 +185,41 @@ impl Game {
         }
         Game {
             users: Vec::new(),
-            draw_black,
-            draw_white,
             discard: Vec::new(),
+            discard_black: Vec::new(),
             group_cards: Vec::new(),
             judge: 0,
             hash,
             current_black: None,
         }
     }
-    pub fn get_discard(&self) -> Vec<Card> {
+    /*pub fn get_discard(&self) -> Vec<Card> {
         self.discard.clone()
     }
     pub fn get_all_white(&self) -> Vec<Card> {
         self.draw_white.clone()
-    }
-    pub fn draw_white(&mut self) -> Card {
-        if self.draw_white.is_empty() {
-            self.draw_white.append(&mut self.discard);
+    }*/
+    pub fn draw_white(&mut self) -> u16 {
+        if self.discard.len() >= (WHITE_CARDS.len() * 5) * 4 {
             self.discard.clear();
         }
-
         let mut rng = rand::thread_rng();
-        let hash: usize = rng.gen::<usize>() % self.draw_white.len();
-        self.draw_white.remove(hash)
+        let mut hash: u16 = rng.gen::<u16>() % BLACK_CARDS.len() as u16;
+        while self.discard_black.contains(&hash) {
+            hash = rng.gen::<u16>() % BLACK_CARDS.len() as u16;
+        }
+        hash
     }
-    pub fn draw_black(&mut self) -> Card {
+    pub fn draw_black(&mut self) -> u16 {
+        if self.discard_black.len() >= (BLACK_CARDS.len() / 5) * 4 {
+            self.discard_black.clear();
+        }
         let mut rng = rand::thread_rng();
-        let hash: usize = rng.gen::<usize>() % self.draw_black.len();
-        self.draw_black.remove(hash)
+        let mut hash: u16 = rng.gen::<u16>() % BLACK_CARDS.len() as u16;
+        while self.discard_black.contains(&hash) {
+            hash = rng.gen::<u16>() % BLACK_CARDS.len() as u16;
+        }
+        hash
     }
     //game.add_user(User::new(packet.get_data(), out.clone()));
     pub fn search_guard(
@@ -211,12 +234,13 @@ impl Game {
         }
         None
     }
-    pub fn current_black(&mut self) -> Card {
+    pub fn current_black(&mut self) -> u16 {
         match &self.current_black {
-            Some(card) => card.clone(),
+            Some(card) => *card,
             None => {
-                self.current_black = Some(self.draw_black());
-                self.current_black.as_ref().unwrap().clone()
+                let card_index = self.draw_black();
+                self.current_black = Some(card_index);
+                card_index
             }
         }
     }
@@ -230,10 +254,10 @@ impl Game {
         None
     }
     pub fn count_black(&self) -> usize {
-        self.draw_black.len()
+        BLACK_CARDS.len() - self.discard_black.len()
     }
     pub fn count_white(&self) -> usize {
-        self.draw_white.len()
+        WHITE_CARDS.len() - self.discard.len()
     }
     pub fn add_user(&mut self, user: User) -> std::result::Result<(), String> {
         for existing_user in self.users.iter() {
@@ -289,8 +313,8 @@ impl Game {
                             self.hash,
                             PacketType::Game,
                             Operation::SubmitCard,
-                            card.get_text(),
-                            card.get_username(),
+                            card.get_text().to_string(),
+                            card.get_username().to_string(),
                         );
                         user.send_packet(&packet).unwrap();
                     }
@@ -307,7 +331,7 @@ impl Game {
                         user.get_id(),
                         PacketType::Game,
                         Operation::DrawWhite,
-                        card.get_text(),
+                        WHITE_CARDS[*card as usize].get_text(),
                         user.get_username().to_string(),
                     );
                     user.send_packet(&packet).unwrap();

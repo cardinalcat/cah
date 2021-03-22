@@ -24,7 +24,8 @@ socket.addEventListener('open', function (event) {
 socket.addEventListener('message', function (event) {
     console.log('Message from server', event.data);
     let content = JSON.parse(event.data);
-    if(content.task == "StartGame"){
+    /// automatically done
+    /*if(content.task == "StartGame"){
         gamecode = content.data;
         let CreateUser = {
             gameid: gamecode,
@@ -35,6 +36,9 @@ socket.addEventListener('message', function (event) {
         }
         socket.send(JSON.stringify(CreateUser));
         window.alert("game id: " + gamecode);
+    }*/
+    if(content.task == "SendMessage"){
+        // do something with the message area
     }
     if(content.task == "CreateUser"){
         let drawcard = {
