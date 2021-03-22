@@ -20,28 +20,29 @@
         <div id="startup">
             <center>
             <div id="firstscreen">
-                <h4 id="firstheader">Choose what to do</h4>
+                <h3 id="firstheader">Welcome to Cards Against Humanity!</h3>
+                <h4 id="firstheader">Select an option:</h4>
                 <table>
                     <tr>
                         <th>
-                        <input type="button" id="newgame" onclick="newgame()" value="new game" class="gamebutton"/>
+                        <input type="button" id="newgame" onclick="newgame()" value="New Game" class="gamebutton"/>
                         </th>
                         <th>
-                        <input type="button" id="joingame" onclick="joingame()" value="join game" class="gamebutton"/>
+                        <input type="button" id="joingame" onclick="joingame()" value="Join Game" class="gamebutton"/>
                         </th>
                     </tr>   
                 </table>
             </div>
             <div id="newgamemenu">
-                <input type="text" id="useridnew" placeholder="enter prefered username" class="startfields"/>
+                <input type="text" id="useridnew" placeholder="Enter Username" class="startfields"/>
                 <br/>
                 <br/>
                 <input type="button" id="submitnewgame" onclick="startgame()" value="Start Game"/>
             </div>
             <div id="joingamemenu">
                 <h4>Join Game</h4>
-                <input type="text" id="gameid" placeholder="enter game id" class="startfields"/>
-                <input type="text" id="userid" placeholder="enter prefered username" class="startfields"/>
+                <input type="text" id="gameid" placeholder="Game ID" class="startfields"/>
+                <input type="text" id="userid" placeholder="Username" class="startfields"/>
                 <br/>
                 <br/>
                 <input type="button" id="submitjoingame" onclick="join()" value="Join Game"/>
@@ -55,14 +56,14 @@
                         <h1>Game Rules</h1>
                         <h4>The Judge</h4>
                         <ul>
-                            <li>one person plays as the judge the order of which is determined by who entered teh game first</li>
-                            <li>the board of the judge will apear blank until cards are submited</li>
-                            <li>in order to choose a winning card click that card, once a winner has been chosen the judges cards will reapear</li>
+                            <li>The first person to enter the game will assume the role of the Judge.</li>
+                            <li>The Judge's board will remain blank until the other players submit their chosen cards.</li>
+                            <li>Once the other players have submitted their choices, the Judge will choose the funniest option by clicking on it.</li>
                         </ul>
                         <h4>Players</h4>
                         <ul>
-                            <li>each player plays with seven cards and chooses the card that they think is funniest when combined with the black card</li>
-                            <li>in order to submit cards the card must be clicked when it is it will then remain blank until the judge has chosen a winner</li>
+                            <li>Each player receives seven white cards. The goal is to pick the funniest option when combined with the black card.</li>
+                            <li>When you choose your card for the round, click on it.  It will turn blank and remain so until the Judge makes their choice.</li>
                         </ul>
                     </div>
                 </div>

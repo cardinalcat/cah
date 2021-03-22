@@ -1,12 +1,12 @@
 var isopen = false;
-var socket = new WebSocket('ws://192.168.2.5:3012');
+var socket = new WebSocket('ws://localhost:8080');
 var username = "";
 var gamecode = "0";
 var submited = false;
 var isjudge = false;
 var judgecards = [username];
 function startup(){
-    socket = new WebSocket('ws://192.168.2.5:3012');
+    socket = new WebSocket('ws://localhost:8080');
 }
 //causes problems if someone joins after card submited
 //var message = "";
@@ -213,7 +213,7 @@ function join(){
         console.log("sending data: " + JSON.stringify(CreateUser));
         socket.send(JSON.stringify(CreateUser));
     }else{
-        show_error("unable to connect to server trying again");
+        show_error("Unable to connect to server. Trying again.");
         startup();
     }
 }
