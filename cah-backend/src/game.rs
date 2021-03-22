@@ -6,9 +6,13 @@ use std::convert::TryInto;
 use std::option::Option;
 use std::sync::{Arc, Mutex, MutexGuard};
 
+use std::collections::hash_map::DefaultHasher;
+
+use crate::CahError;
 use tokio::sync::mpsc::Receiver;
 
 use crate::network::{Operation, Packet, PacketType};
+use std::hash::{Hash, Hasher};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub enum Color {
@@ -60,21 +64,25 @@ impl User {
     pub fn score(&self) -> usize {
         self.black_cards.len()
     }
-    pub fn new(username: String, sender: ws::Sender, id: u16) -> Self {
+    pub fn new(username: String, sender: ws::Sender) -> Self {
+        let mut hasher = DefaultHasher::new();
+        username.hash(&mut hasher);
+
         User {
             sender,
             white_cards: Vec::with_capacity(7),
             black_cards: Vec::new(),
-            hash: id,
+            hash: hasher.finish() as u16,
             username,
         }
     }
-    pub fn send_packet(&self, packet: Packet) -> std::result::Result<(), ws::Error> {
-        self.sender
-            .send(ws::Message::text(serde_json::to_string(&packet).unwrap()))
+    pub fn send_packet(&self, packet: &Packet) -> Result<(), CahError> {
+        Ok(self
+            .sender
+            .send(ws::Message::Text(serde_json::to_string(packet).unwrap()))?)
     }
-    pub fn get_username(&self) -> String {
-        self.username.clone()
+    pub fn get_username(&self) -> &str {
+        &self.username
     }
     pub fn get_id(&self) -> u16 {
         self.hash
@@ -100,11 +108,37 @@ pub struct Game {
     current_black: Option<Card>,
 }
 impl Game {
-    pub async fn handle(hash: u16, mut receiver: Receiver<Packet>) -> Result<(), crate::CahError>{
+    pub async fn handle(
+        hash: u16,
+        mut receiver: Receiver<Packet>,
+        create_packet: Packet,
+        sender: ws::Sender,
+    ) -> Result<(), crate::CahError> {
         let mut game = Game::new(hash);
+        game.users
+            .push(User::new(create_packet.get_username().to_string(), sender));
         loop {
-            let packet = receiver.recv().await;
-            /// main game loop here
+            let packet = receiver.recv().await.unwrap();
+            // main game loop here
+            match packet.get_task() {
+                Operation::SendMessage => {
+                    for user in game.users.iter_mut() {
+                        if user.get_username() != packet.get_username() {
+                            user.send_packet(&Packet::new(
+                                game.hash,
+                                PacketType::Message,
+                                Operation::SendMessage,
+                                packet.get_data(),
+                                packet.get_username().to_string(),
+                            ))
+                            .unwrap();
+                        }
+                    }
+                }
+                _ => {
+                    unimplemented!();
+                }
+            }
         }
     }
     pub fn new(hash: u16) -> Self {
@@ -242,12 +276,12 @@ impl Game {
     pub fn count_users(&self) -> usize {
         self.users.len()
     }
-    pub fn submit_card(&mut self, username: String, card_text: String) {
+    pub async fn submit_card(&mut self, username: String, card_text: String) {
         self.group_cards.push(JudgeCard::new(username, card_text));
         println!("group cards len: {}", self.group_cards.len());
         println!("users len {}", self.users.len());
         if self.users.len() - 1 == self.group_cards.len() {
-            for user in self.users.iter() {
+            for user in self.users.iter_mut() {
                 if user.get_id() == self.judge {
                     for card in self.group_cards.iter() {
                         // create and send the packet to the judge
@@ -258,14 +292,14 @@ impl Game {
                             card.get_text(),
                             card.get_username(),
                         );
-                        user.send_packet(packet).unwrap();
+                        user.send_packet(&packet).unwrap();
                     }
                 }
             }
             self.group_cards.clear();
         }
     }
-    pub fn change_judge(&mut self) {
+    pub async fn change_judge(&mut self) {
         match self.search_users_by_id(self.judge) {
             Some(user) => {
                 for card in user.get_white_cards().iter() {
@@ -274,9 +308,9 @@ impl Game {
                         PacketType::Game,
                         Operation::DrawWhite,
                         card.get_text(),
-                        user.get_username(),
+                        user.get_username().to_string(),
                     );
-                    user.send_packet(packet).unwrap();
+                    user.send_packet(&packet).unwrap();
                 }
             }
             None => panic!("user stopped existing for some reason"),
@@ -285,7 +319,7 @@ impl Game {
         if self.judge == user_count {
             self.judge = 0;
         } else {
-            self.judge = self.judge + 1;
+            self.judge += 1;
         }
     }
 }

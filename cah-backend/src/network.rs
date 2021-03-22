@@ -38,14 +38,17 @@ impl Packet {
         }
     }
 
-    pub fn report_error(error: String) -> Packet {
-        Packet {
-            gameid: String::from("-1"),
-            username: String::from("server"),
-            kind: PacketType::Error,
-            task: Operation::None,
-            data: error,
-        }
+    pub fn report_error(error: String) -> ws::Message {
+        ws::Message::Text(
+            serde_json::to_string(&Packet {
+                gameid: String::from("-1"),
+                username: String::from("server"),
+                kind: PacketType::Error,
+                task: Operation::None,
+                data: error,
+            })
+            .unwrap(),
+        )
     }
 
     pub fn get_task(&self) -> Operation {
@@ -57,7 +60,7 @@ impl Packet {
     pub fn get_gameid(&self) -> &str {
         &self.gameid
     }
-    pub fn get_username(&self) -> String {
-        self.username.clone()
+    pub fn get_username(&self) -> &str {
+        &self.username
     }
 }
