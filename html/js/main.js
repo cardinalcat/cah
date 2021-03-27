@@ -230,3 +230,17 @@ function gamerules(){
         rules = false;
     }
 }
+
+var modal = document.getElementById("Rules");
+var btn = document.getElementById("open-rules");
+var span = document.getElementsByClassName("close)[0];
+
+btn.onClick = function() {
+    modal.style.display = "none";
+}
+
+window.onclick = function(event) {
+    if(event.target == modal) {
+        modal.style.display = "none";
+    }
+}
