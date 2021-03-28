@@ -1,0 +1,174 @@
+#left{
+    width: 80%;
+    height:100%;
+    display:inline-block;
+}
+#right{
+    width:19.5%;
+    height:100%;
+    float: right;
+    border-left:1px solid white;
+    background-color: black;
+}
+#messagetext{
+    width: 100%;
+    height: 4%;
+}
+#chat{
+    width:100%;
+    height:96%;
+}
+body{
+    background-color: white;
+    color:black;
+}
+#dashboard{
+    width: 100%;
+    height:40%;
+    background-color: white;
+    color:black;
+}
+#streams{
+    width:100%;
+    height: 60%;
+}
+.card{
+    height:49.8%;
+    width:24.8%;
+    border: 1px solid black;
+    float: left;
+}
+#card0{
+    background-color: black;
+    color: white;
+    
+}
+#menu{
+    width:100%;
+    height: 9%;
+}
+.submit{
+    float:right;
+    background-color: white;
+    border:0px;
+    font-size: medium;
+    margin:1%;
+}
+.menubutton{
+    height: 100%;
+    border: 0px;
+    background-color: white;
+    width:10%;
+}
+#cards{
+    height:90%;
+    width:100%;
+}
+#game{
+    display:none;
+}
+#startup{
+    width:25%;
+    height:20%;
+    margin-left: auto;
+    margin-top: 15%;
+    margin-bottom: auto;
+    margin-right: auto;
+    background-color:black;
+    color:white;
+    
+}
+.gamebutton{
+    width: 100px;
+    margin: 20px;
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    padding: 15px;
+}
+#firstheader{
+    margin: 20px;
+    padding-top: 20px;
+}
+#joingamemenu{
+    color: white;
+    display: none;
+}
+#newgamemenu{
+    display: none;
+    border: 1px solid white;
+}
+.startfields{
+    margin: 2%;
+}
+.wrapper{
+    width: 20%;
+    float: left;
+    height: 100%;
+}
+.content{
+    width:76%;
+    float:left;
+    height:100%;
+    padding: 2%;
+}
+#topbar{
+    background-color: red;
+    color: white;
+    height: 6%;
+    display:none;
+}
+#hiderror{
+    background-color: red;
+    color: white;
+    border: 0px;
+    width: 5%;
+    float:left;
+    height: 100%;
+}
+#errmessage{
+    width: 95%;
+    height:100%;
+    float: left;
+}
+#rules{
+    display: none;
+    overflow:scroll;
+    background-color: white;
+    color:black;
+}
+.modal{
+    display: none:
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 75%;
+    height: 75%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0,4);
+}
+.rules-text {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+.close{
+    color: #aaa;
+    float: right;
+    text-decoration: none;
+    cursor: pointer;
+}
+.close:hover,
+.close:focus{
+    color: black;
+    text-decoration: none;
+    cursor: point;
+}
+@keyframes animatetop {
+    from {top: -300px; opacity: 0}
+    to: {top: 0; opacity: 1}
+}
